@@ -1,4 +1,3 @@
-
 import sqlite3
 import bcrypt
 import json
@@ -24,11 +23,9 @@ class UsuarioDB:
             "Indicador TEXT NOT NULL,"
             "fecha_consulta TEXT NOT NULL,"
             "Fecha TEXT NOT NULL,"
-            "Valor TEXT NOT NULL,"
-            "promedio_historico TEXT,"
+            "Valor INTEGER NOT NULL,"
             "FOREIGN KEY (usuario_id) REFERENCES usuarios(id))"
         )
-       
         self.conn.commit()
 
     def agregar_usuario(self, username_hash, password_hash):
@@ -49,20 +46,45 @@ class UsuarioDB:
                 return user_id, password_hash
         return None, None
 
-    def agregar_consulta(conn, indicador):
-       try:
-        cursor = conn.cursor()
-        cursor.execute('''INSERT OR IGNORE consultas (id_usuario, Indicador, Fecha, Valor) 
-                          VALUES (?, ? , ?, ?)
-                       ''', (
-                           indicador.get('Indicador'),
-                           indicador.get('Fecha'),
-                           indicador.get('Valor')
-                       ))
-        conn.commit()
-        print(f"Consulta de '{indicador.get('Indicador')}' guardado correctamente")
-       except ValueError:
-                print("Por favor, ingrese un Indicador valido.")
+    def agregar_consulta(self, usuario_id, indicador):
+        try:
+            self.cursor.execute(
+                '''INSERT INTO consultas (usuario_id, Indicador, fecha_consulta, Fecha, Valor)
+                VALUES (?, ?, ?, ?, ?)''',
+                (
+                    usuario_id,
+                    indicador.get('Indicador'),
+                    datetime.now().isoformat(),
+                    indicador.get('Fecha'),
+                    str(indicador.get('Valor'))
+                )
+            )
+            self.conn.commit()
+            print(f"Consulta de '{indicador.get('Indicador')}' guardada correctamente.")
+        except Exception as e:
+            print("Error al guardar la consulta:", e)
+
+    def listar_consultas(self, usuario_id):
+        try:
+            self.cursor.execute("""
+                SELECT indicador, fecha, valor
+                FROM consultas
+                WHERE usuario_id = ?
+                ORDER BY fecha_consulta DESC
+            """, (usuario_id,))
+            return self.cursor.fetchall()
+        except sqlite3.Error as e:
+            print(f"Error al listar consultas para el usuario {usuario_id}: {e}")
+            return []
+
+    def obtener_password_hash_por_usuario(self, username):
+        self.cursor.execute('SELECT username_hash, password_hash FROM usuarios')
+        for username_hash, password_hash in self.cursor.fetchall():
+            if bcrypt.checkpw(username.encode('utf-8'), username_hash):
+                return password_hash
+        return None
+
+
 
 
     def cerrar(self):
