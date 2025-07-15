@@ -3,7 +3,7 @@ import bcrypt
 class Auth:
     def __init__(self, db):
         self.db = db
-        self.usuario_id = None  # Esto nos servirá en el menú
+        self.usuario_id = None 
 
     def registrar(self, username, password):
         username_hash = bcrypt.hashpw(username.encode('utf-8'), bcrypt.gensalt())

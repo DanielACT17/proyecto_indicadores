@@ -21,18 +21,14 @@ class UsuarioDB:
             "CREATE TABLE IF NOT EXISTS consultas("
             "id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "usuario_id INTEGER NOT NULL,"
-            "indicador TEXT NOT NULL,"
+            "Indicador TEXT NOT NULL,"
             "fecha_consulta TEXT NOT NULL,"
-            "resultado TEXT NOT NULL,"
+            "Fecha TEXT NOT NULL,"
+            "Valor TEXT NOT NULL,"
+            "promedio_historico TEXT,"
             "FOREIGN KEY (usuario_id) REFERENCES usuarios(id))"
         )
-        self.cursor.execute(
-            "CREATE TABLE IF NOT EXISTS indicadores("
-            "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-            "tipo TEXT NOT NULL,"
-            "fecha TEXT NOT NULL,"
-            "valor REAL NOT NULL)"
-        )
+       
         self.conn.commit()
 
     def agregar_usuario(self, username_hash, password_hash):
@@ -53,17 +49,20 @@ class UsuarioDB:
                 return user_id, password_hash
         return None, None
 
-    def guardar_consulta(self, usuario_id, indicador, datos_resultado):
-        resultado_json = json.dumps(datos_resultado)
-        fecha_consulta = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-        self.cursor.execute('''
-            INSERT INTO consultas (usuario_id, indicador, fecha_consulta, resultado)
-            VALUES (?, ?, ?, ?)
-        ''', (usuario_id, indicador, fecha_consulta, resultado_json))
-        self.conn.commit()
-        print(f" Consulta '{indicador}' guardada correctamente.")
-
+    def agregar_consulta(conn, indicador):
+       try:
+        cursor = conn.cursor()
+        cursor.execute('''INSERT OR IGNORE consultas (id_usuario, Indicador, Fecha, Valor) 
+                          VALUES (?, ? , ?, ?)
+                       ''', (
+                           indicador.get('Indicador'),
+                           indicador.get('Fecha'),
+                           indicador.get('Valor')
+                       ))
+        conn.commit()
+        print(f"Consulta de '{indicador.get('Indicador')}' guardado correctamente")
+       except ValueError:
+                print("Por favor, ingrese un Indicador valido.")
 
 
     def cerrar(self):

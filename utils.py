@@ -14,7 +14,7 @@ class App:
 
     def menu(self):
         while True:
-            print("\n1. Registrar Usuario \n2. Iniciar sesión \n3. Consultar Evolución UF \n4. Listar los indicadores \n0. Salir")
+            print("\n1. Registrar Usuario \n2. Iniciar sesión \n3. Consultar Evolución UF \n6. Ver el valor actual del dolar\n5. Listar las consulta de un usuario \n0. Salir")
             opcion = input("Selecciona una opción: ")
 
             if opcion == '1':
@@ -29,18 +29,16 @@ class App:
 
             elif opcion == '3':
                 if not self.auth.usuario_id:
-                    print(" Debes iniciar sesión primero.")
+                    print("Debes iniciar sesión primero.")
                     continue
                 consultar_uf(self.db, self.auth.usuario_id)
 
-            elif opcion == '4':
+            elif opcion == "4":
+                print("El valor del dolar es:")
+            
+            elif opcion == '6':
                 print("\n Listar Consultas guardadas:")
-                indicadores = self.db.listar_consultas()
-                if not indicadores:
-                    print("No hay indicadores guardados.")
-                else:
-                    for tipo, fecha, valor in indicadores:
-                        print(f"{tipo.upper()} - Fecha: {fecha} | Valor: {valor}")
+               
 
             elif opcion == '0':
                 self.db.cerrar()
